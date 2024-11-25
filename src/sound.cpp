@@ -21,6 +21,9 @@ struct Color {
             r(r), g(g), b(b), a(a) {}
 };
 
+// NOTE: Macro Definition Of Red
+#define RED Color(255, 0 , 0, 255)
+
 // NOTE: Actual Sound Class
 class Sound {
 public:
@@ -92,8 +95,8 @@ SDL_Renderer *Sound::CreateRenderer(SDL_Window *window, Color color) {
 
 void SDL_CleanUp(SDL_Window *window, SDL_Renderer *renderer) {
     //NOTE: CleanUp After Visualization
-    SDL_DestroyWindow(window);
-    SDL_DestroyRenderer(renderer);
+    if (window)   SDL_DestroyWindow(window);
+    if (renderer) SDL_DestroyRenderer(renderer);
     SDL_Quit();
 }
 
@@ -101,12 +104,23 @@ void VisualizeSineWave(Sound s, Uint32 Delay) {
     //NOTE: Initialize an Array of SDL_Point
     vector<SDL_Point> Points;
     vector<float> SineWaves = s.SineWave();
+    
+    //NOTE: Number of Samples
     int NumSamples = SineWaves.size();
+
+    //NOTE: Samples in One Cycle
+    int SamplesPerCycle = s.SampleRate / s.Frequency;
+
     
     // NOTE: Loop Through Number of Sample and Update X and Y for Each Points
     for (int i = 0; i < NumSamples; ++i) {
+        // NOTE: Map One Cycle Across Screen Width
         int x = (i * SCREEN_WIDTH) / NumSamples;
-        int y = (SCREEN_HEIGHT/2) - (SineWaves[i] * (SCREEN_HEIGHT / 4)); // Scale amplitude
+
+        // NOTE: Scale Amplitude
+        int y = (SCREEN_HEIGHT/2) - (SineWaves[i] * (SCREEN_HEIGHT / 4));
+        
+        //NOTE: Push x, y to Points Array
         SDL_Point point = {x, y};
         Points.push_back(point);
     }
@@ -116,30 +130,37 @@ void VisualizeSineWave(Sound s, Uint32 Delay) {
     SDL_Renderer *renderer = s.CreateRenderer(window, RED);
     
     // NOTE: Draw Points
-    SDL_RenderDrawPoints(renderer, Points.data(), Points.size());
+    SDL_RenderDrawLines(renderer, Points.data(), Points.size());
     SDL_RenderPresent(renderer);
  
     // NOTE: DELAY WINDOW
     SDL_Delay(Delay);
-    SDL_Cleanup(window, renderer);
+    SDL_CleanUp(window, renderer);
 }
 
 int main(int argc, const char **argv) {
     //NOTE: Initialize Sound Variable
-    Sound s(44100, 440.0, 2.0, 1.0);
-    
+    Sound s(44100, 440.0, 0.1, 1);
+
     // NOTE: Return Error if command-line Args is less than 2
-    if (argc != 2) {
+    if (argc != 3 && argc != 2) {
         cout << "Usage: " << argv[0] << " Flag " << endl;
         return 1;
     }
-    
+
     // NOTE: if Flag is -d , return Sound Details
-    if (strcmp(argv[1], "-d") == 0) {
-        s.GetDetails();
+    if (argc == 2) {
+        if (strcmp(argv[1], "-d") == 0) {
+            s.GetDetails();
+        }
     }
-    
-    // NOTE: Visualize the Sine Wave and return 0
-    VisualizeSineWave(s, 2000);
+
+    // NOTE: if Flag is -v, Visualize the Sine Wave
+    if (argc == 3) {
+        if (strcmp(argv[1], "-v") == 0) {
+            VisualizeSineWave(s, stoul(argv[2]));
+        }
+    }
+
     return 0;
 }
