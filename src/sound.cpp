@@ -21,8 +21,10 @@ struct Color {
             r(r), g(g), b(b), a(a) {}
 };
 
-// NOTE: Macro Definition Of Red
-#define RED Color(255, 0 , 0, 255)
+// NOTE: Macro Definition Of Red, Greem and Blue Colors
+#define RED   Color(255, 0 , 0, 255)
+#define GREEN Color(0, 255, 0, 255)
+#define BLUE  Color(0, 0, 255, 255)
 
 // NOTE: Actual Sound Class
 class Sound {
