@@ -87,6 +87,29 @@ void SDL_Cleanup(SDL_Window *window, SDL_Renderer *renderer) {
     SDL_Quit();
 }
 
+void VisualizeSineWave(Sound s, Uint32 Delay) {
+    vector<SDL_Point> Points;
+    vector<float> SineWaves = s.SineWave();
+    int NumSamples = SineWaves.size();
+
+    for (int i = 0; i < NumSamples; ++i) {
+        int x = (i * SCREEN_WIDTH) / NumSamples;
+        int y = (SCREEN_HEIGHT/2) - (SineWaves[i] * (SCREEN_HEIGHT / 4)); // Scale amplitude
+        SDL_Point point = {x, y};
+        Points.push_back(point);
+    }
+    
+    SDL_Window *window = s.InitWindow();
+    SDL_Renderer *renderer = s.CreateRenderer(window, RED);
+    SDL_RenderDrawPoints(renderer, Points.data(), Points.size());
+    SDL_RenderPresent(renderer);
+ 
+    // NOTE: DELAY WINDOW
+    SDL_Delay(Delay);
+    
+    SDL_Cleanup(window, renderer);
+}
+
 int main(int argc, const char **argv) {
     Sound s(44100, 440.0, 2.0, 1.0);
 
@@ -98,21 +121,8 @@ int main(int argc, const char **argv) {
     if (strcmp(argv[1], "-d") == 0) {
         s.GetDetails();
     }
-    
-    vector<float> SineWaves = s.SineWave();
-    for (int i = 0; i < (int)(s.Duration*s.SampleRate) % 1000; ++i) {
-        cout << "Sample " << i << " : " << SineWaves[i] << endl;
-    }
-    
-    SDL_Window *window = s.InitWindow();
-    SDL_Renderer *renderer = s.CreateRenderer(window, RED);
-    SDL_RenderDrawLine(renderer,0, SCREEN_HEIGHT/2, SCREEN_WIDTH-100, SCREEN_HEIGHT/2);
-    SDL_RenderDrawLine(renderer, 100, 100, 100, SCREEN_HEIGHT-100);
-    SDL_RenderPresent(renderer);
 
-    // NOTE: DELAY WINDOW
-    SDL_Delay(10000);
-    
-    SDL_Cleanup(window, renderer);
+    VisualizeSineWave(s, 2000);
+
     return 0;
 }
