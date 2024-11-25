@@ -109,9 +109,6 @@ void VisualizeSineWave(Sound s, Uint32 Delay) {
     //NOTE: Number of Samples
     int NumSamples = SineWaves.size();
 
-    //NOTE: Samples in One Cycle
-    int SamplesPerCycle = s.SampleRate / s.Frequency;
-
     // NOTE: Loop Through Number of Sample and Update X and Y for Each Points
     for (int i = 0; i < NumSamples; ++i) {
         // NOTE: Map One Cycle Across Screen Width
