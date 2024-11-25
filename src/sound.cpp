@@ -58,6 +58,13 @@ public:
     SDL_Renderer *CreateRenderer(SDL_Window *window, Color color);
 };
 
+void SDL_CleanUp(SDL_Window *window, SDL_Renderer *renderer) {
+    //NOTE: CleanUp After Visualization
+    if (window)   SDL_DestroyWindow(window);
+    if (renderer) SDL_DestroyRenderer(renderer);
+    SDL_Quit();
+}
+
 SDL_Window *Sound::InitWindow() {
     //NOTE: Initializes Window
     SDL_Window *window = nullptr;
@@ -92,14 +99,6 @@ SDL_Renderer *Sound::CreateRenderer(SDL_Window *window, Color color) {
     return renderer;
 }
 
-
-void SDL_CleanUp(SDL_Window *window, SDL_Renderer *renderer) {
-    //NOTE: CleanUp After Visualization
-    if (window)   SDL_DestroyWindow(window);
-    if (renderer) SDL_DestroyRenderer(renderer);
-    SDL_Quit();
-}
-
 void VisualizeSineWave(Sound s, Uint32 Delay) {
     //NOTE: Initialize an Array of SDL_Point
     vector<SDL_Point> Points;
@@ -111,7 +110,6 @@ void VisualizeSineWave(Sound s, Uint32 Delay) {
     //NOTE: Samples in One Cycle
     int SamplesPerCycle = s.SampleRate / s.Frequency;
 
-    
     // NOTE: Loop Through Number of Sample and Update X and Y for Each Points
     for (int i = 0; i < NumSamples; ++i) {
         // NOTE: Map One Cycle Across Screen Width
@@ -124,7 +122,7 @@ void VisualizeSineWave(Sound s, Uint32 Delay) {
         SDL_Point point = {x, y};
         Points.push_back(point);
     }
-    
+
     // NOTE: Initialize Window and Renderer
     SDL_Window *window = s.InitWindow();
     SDL_Renderer *renderer = s.CreateRenderer(window, RED);
@@ -137,6 +135,8 @@ void VisualizeSineWave(Sound s, Uint32 Delay) {
     SDL_Delay(Delay);
     SDL_CleanUp(window, renderer);
 }
+
+void AudioCallBack(void *UserData)
 
 int main(int argc, const char **argv) {
     //NOTE: Initialize Sound Variable
@@ -161,6 +161,5 @@ int main(int argc, const char **argv) {
             VisualizeSineWave(s, stoul(argv[2]));
         }
     }
-
     return 0;
 }
