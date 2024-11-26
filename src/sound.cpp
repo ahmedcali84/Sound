@@ -141,7 +141,7 @@ int main(int argc, const char **argv) {
     //NOTE: Initialize Sound Variable
     Sound s(44100, 440.0, 0.1, 1);
 
-    // NOTE: Return Error if command-line Args is less than 2
+    // NOTE: Return Error if command-line Args is not 3 or 2
     if (argc != 3 && argc != 2) {
         cout << "Usage: " << argv[0] << " Flag " << endl;
         return 1;
