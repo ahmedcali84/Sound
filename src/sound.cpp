@@ -135,6 +135,7 @@ void VisualizeSineWave(Sound s, Uint32 Delay) {
     SDL_CleanUp(window, renderer);
 }
 
+// TODO Implement playable sound
 void AudioCallBack(void *UserData)
 
 int main(int argc, const char **argv) {
