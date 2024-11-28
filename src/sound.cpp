@@ -135,7 +135,7 @@ void VisualizeSineWave(Sound s, Uint32 Delay) {
     SDL_CleanUp(window, renderer);
 }
 
-// TODO Implement playable sound
+// TODO Define an Audio callback Function to populate the buffer with sine wave samples
 void AudioCallBack(void *UserData)
 
 int main(int argc, const char **argv) {
