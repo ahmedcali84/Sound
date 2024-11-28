@@ -58,6 +58,7 @@ public:
     // NOTE: Function Declarations
     SDL_Window *InitWindow();
     SDL_Renderer *CreateRenderer(SDL_Window *window, Color color);
+    void PlaySound();
 };
 
 void SDL_CleanUp(SDL_Window *window, SDL_Renderer *renderer) {
@@ -70,7 +71,7 @@ void SDL_CleanUp(SDL_Window *window, SDL_Renderer *renderer) {
 SDL_Window *Sound::InitWindow() {
     //NOTE: Initializes Window
     SDL_Window *window = nullptr;
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         cerr << "Error Initializing Video" << SDL_GetError() << endl;
         exit(1);
     }
@@ -135,24 +136,65 @@ void VisualizeSineWave(Sound s, Uint32 Delay) {
     SDL_CleanUp(window, renderer);
 }
 
-// TODO Define an Audio callback Function to populate the buffer with sine wave samples
+// NOTE: Define an Audio callback Function to populate the buffer with sine wave samples
 void AudioCallBack(void *UserData, Uint8 *stream, int len) {
     Sound *sound = (Sound*)UserData; // Get Sound Object
     vector<float> SineWaves = sound->SineWave(); // Get Sine Wave Values
+    cout << "Callback Triggered, Filling Buffer..." << endl;
 
     static int SampleIndex = 0;
-    for (int i = 0; i < len/2; ++i) {
-        Sint16 sample = (Sint16)(SineWaves[SampleIndex] * 32767);
-        ((Sint16*)stream)[i] = 0;
+    Sint16 *buffer = (Sint16*)stream;
+    int SampleToFill = len / sizeof(Sint16);
 
-        // Move to next sample
-        SampleIndex = (SampleIndex + 1) % SineWaves.size();
+    for (int i = 0; i < SampleToFill; ++i) {
+        if (SampleIndex < SineWaves.size()) {
+            buffer[i] = (Sint16)(SineWaves[SampleIndex] * 32767);
+            SampleIndex++;
+        } else {
+            buffer[i] = 0;
+        }
     }
+    SampleIndex %= SineWaves.size();
+}
+
+void Sound::PlaySound() {
+    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+        cerr << "Failed to Initialize SDL Audio: " << SDL_GetError() << endl;
+        exit(1);
+    }
+    cout << "SDL Audio Initialized" << endl;
+    SDL_AudioSpec want, have;
+    SDL_AudioDeviceID dev;
+
+    SDL_zero(want);
+    want.freq = SampleRate;
+    want.format = AUDIO_S16SYS;
+    want.channels = 1;
+    want.samples = 4096;
+    want.callback = AudioCallBack;
+    want.userdata = this;
+
+    dev = SDL_OpenAudioDevice(nullptr, 0, &want, &have, SDL_AUDIO_ALLOW_FORMAT_CHANGE);
+    if (dev == 0) {
+        cerr << "Failed to Open Audio Device" << SDL_GetError() << endl;
+        SDL_Quit();
+        exit(1);
+    }
+    cout << "Audio Device Opened Successfully" << endl;
+    
+    SDL_PauseAudioDevice(dev, 0);
+    cout << "Playing Sound ...." << endl;
+    
+    SDL_Delay(static_cast<Uint32>(Duration*1000));
+    cout << "Sound Playback Complete" << endl;
+
+    SDL_CloseAudioDevice(dev);
+    SDL_Quit();
 }
 
 int main(int argc, const char **argv) {
     //NOTE: Initialize Sound Variable
-    Sound s(44100, 440.0, 0.1, 1);
+    Sound s(44100, 440.0, 1.0, 1);
 
     // NOTE: Return Error if command-line Args is not 3 or 2
     if (argc != 3 && argc != 2) {
@@ -161,9 +203,13 @@ int main(int argc, const char **argv) {
     }
 
     // NOTE: if Flag is -d , return Sound Details
+    // NOTE: if Flag is -p , plays Sound
     if (argc == 2) {
         if (strcmp(argv[1], "-d") == 0) {
             s.GetDetails();
+        }
+        if (strcmp(argv[1], "-p") == 0) {
+            s.PlaySound();
         }
     }
 
