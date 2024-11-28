@@ -136,7 +136,19 @@ void VisualizeSineWave(Sound s, Uint32 Delay) {
 }
 
 // TODO Define an Audio callback Function to populate the buffer with sine wave samples
-void AudioCallBack(void *UserData)
+void AudioCallBack(void *UserData, Uint8 *stream, int len) {
+    Sound *sound = (Sound*)UserData; // Get Sound Object
+    vector<float> SineWaves = sound->SineWave(); // Get Sine Wave Values
+
+    static int SampleIndex = 0;
+    for (int i = 0; i < len/2; ++i) {
+        Sint16 sample = (Sint16)(SineWaves[SampleIndex] * 32767);
+        ((Sint16*)stream)[i] = 0;
+
+        // Move to next sample
+        SampleIndex = (SampleIndex + 1) % SineWaves.size();
+    }
+}
 
 int main(int argc, const char **argv) {
     //NOTE: Initialize Sound Variable
